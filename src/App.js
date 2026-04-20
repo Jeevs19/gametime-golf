@@ -454,7 +454,7 @@ export default function App(){
       setWind({s,deg,d:wDir(deg),sim:true});
     }finally{setWindLoad(false);}
   },[]);
-  useEffect(()=>{if(gps&&screen==="round")fetchWind(gps?.lat,gps?.lon);},[gps.lat,gps.lon,screen,fetchWind]);
+ useEffect(()=>{if(gps&&screen==="round")fetchWind(gps?.lat,gps?.lon);},[gps,screen,fetchWind]);
 
   // ── Computed ───────────────────────────────────────────────────────────────
   const hd = holes[holeIdx] || blankHole();
