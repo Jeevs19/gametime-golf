@@ -518,20 +518,24 @@ const filtered = query.trim().length < 2 ? COURSES : [
     const q=query.toLowerCase();
     return c.name.toLowerCase().includes(q)||c.city.toLowerCase().includes(q)||c.state.toLowerCase().includes(q);
   }),
-  ...apiCourses.filter(a=>!COURSES.find(c=>c.name.toLowerCase()===a.club_name.toLowerCase())).map(a=>({
+...apiCourses.filter(a=>!COURSES.find(c=>c.name.toLowerCase()===a.club_name.toLowerCase())).map(a=>{
+  const maleTees = a.tees.male || [];
+  const primaryTee = maleTees[0];
+  return {
     id: String(a.id),
     name: a.club_name,
     city: a.location.city,
     state: a.location.state,
     fromAPI: true,
-    holes: a.tees.male?.[0]?.holes.map(h=>({
+    holes: (primaryTee?.holes || []).map((h,i)=>({
       par: h.par,
       hdcp: h.handicap,
-      tees: Object.fromEntries((a.tees.male||[]).map(t=>[t.tee_name.toLowerCase().replace(/[^a-z]/g,''),t.holes[0]?.yardage])),
+      tees: Object.fromEntries(maleTees.map(t=>[t.tee_name.toLowerCase().replace(/[^a-z]/g,''), t.holes[i]?.yardage])),
       green:{front:12,back:22},
       hazards:[]
-    })) || []
-  }))
+    }))
+  };
+})
 ];
   const availTees = selCourse ? Object.keys(TEE_META).filter(id=>selCourse.holes[0].tees[id]!=null) : [];
 
