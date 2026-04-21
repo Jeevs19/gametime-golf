@@ -434,7 +434,7 @@ export default function App(){
     setTracking(true);
     watchRef.current=navigator.geolocation.watchPosition(
       p=>{setGpsErr(null);setGps({lat:p.coords.latitude,lon:p.coords.longitude,acc:Math.round(p.coords.accuracy)});},
-      (err)=>{setGpsErr("sim");setGps({...simPos.current,sim:true});},
+    (err)=>{if(err.code===1){setGpsErr("denied");}else{setGpsErr("sim");setGps({...simPos.current,sim:true});}},
       {enableHighAccuracy:true,maximumAge:0,timeout:30000}
     );
   },[]);
@@ -1090,7 +1090,13 @@ const filtered = query.trim().length < 2 ? COURSES : [
 
           {/* GPS + Wind strip */}
           <div style={{display:"flex",gap:8,margin:"4px 20px 10px",flexWrap:"wrap"}}>
-            <div style={{...S.badge,background:gpsErr==="sim"?"#2d2208":tracking?"#1a472a":"#3d1515"}}><span style={{fontSize:10,color:gpsErr==="sim"?"#fbbf24":tracking?"#4ade80":"#f87171"}}>{!tracking?"📡 Off":gpsErr==="sim"?"📡 Sim":`📡 ±${gps?.acc||"?"}m`}</span></div>
+ <div style={{...S.badge,background:gpsErr==="denied"?"#3d1515":gpsErr==="sim"?"#2d2208":tracking?"#1a472a":"#3d1515"}}
+  onClick={()=>{if(gpsErr==="denied")alert('Location blocked. Go to Settings → Privacy & Security → Location Services → Safari → Allow.');}}
+>
+  <span style={{fontSize:10,color:gpsErr==="denied"?"#f87171":gpsErr==="sim"?"#fbbf24":tracking?"#4ade80":"#f87171"}}>
+    {!tracking?"📡 Off":gpsErr==="denied"?"📡 Tap to fix GPS":gpsErr==="sim"?"📡 Sim":`📡 ±${gps?.acc||"?"}m`}
+  </span>
+</div>
             {windLoad&&<div style={{...S.badge,background:"#0c1a2e"}}><span style={{fontSize:10,color:"#6b7280"}}>🌬️…</span></div>}
             {wind&&!windLoad&&<div style={{...S.badge,background:"#0c1a2e"}}><span style={{fontSize:10,color:wStr(wind.s).c,fontWeight:600}}>🌬️ {wind.s}mph {wind.d}{wind.sim?" (sim)":""}</span></div>}
           </div>
