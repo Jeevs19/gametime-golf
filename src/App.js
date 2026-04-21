@@ -579,30 +579,69 @@ const filtered = query.trim().length < 2 ? COURSES : [
   };
   const onSwing=()=>{
   if(gps?.acc&&gps.acc>20){showToast("Poor GPS accuracy, wait a moment","⚠️");return;}
+  setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");
+  if(gps)fetchWind(gps.lat,gps.lon);
   if(gps&&!gps.sim){
     const readings=[];
+    const start=Date.now();
     const sample=()=>{
+      if(Date.now()-start>10000){
+        if(readings.length>0){
+          setOrigin({lat:readings.reduce((a,r)=>a+r.lat,0)/readings.length,lon:readings.reduce((a,r)=>a+r.lon,0)/readings.length});
+        }
+        return;
+      }
       navigator.geolocation.getCurrentPosition(p=>{
         readings.push({lat:p.coords.latitude,lon:p.coords.longitude});
-        if(readings.length<3){setTimeout(sample,600);}
+        if(readings.length<5){setTimeout(sample,500);}
         else{
-          const avgLat=readings.reduce((a,r)=>a+r.lat,0)/3;
-          const avgLon=readings.reduce((a,r)=>a+r.lon,0)/3;
-          setOrigin({lat:avgLat,lon:avgLon});
+          setOrigin({lat:readings.reduce((a,r)=>a+r.lat,0)/5,lon:readings.reduce((a,r)=>a+r.lon,0)/5});
         }
+      },(err)=>{
+        if(Date.now()-start<10000)setTimeout(sample,500);
+        else if(readings.length>0)setOrigin({lat:readings.reduce((a,r)=>a+r.lat,0)/readings.length,lon:readings.reduce((a,r)=>a+r.lon,0)/readings.length});
       },{enableHighAccuracy:true,timeout:2000,maximumAge:0});
     };
     sample();
   }
-  setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");
-  if(gps)fetchWind(gps.lat,gps.lon);
 };
-  const onMark=()=>{
-    const l=(gps&&!gps.sim)?gps:simP(true);
+
+const onMark=()=>{
+  if(gps&&!gps.sim){
+    const readings=[];
+    const start=Date.now();
+    setSS(SS.LAND);setMsg("📡 Locking position...");
+    const sample=()=>{
+      if(Date.now()-start>5000){
+        const l=readings.length>0?{lat:readings.reduce((a,r)=>a+r.lat,0)/readings.length,lon:readings.reduce((a,r)=>a+r.lon,0)/readings.length}:gps;
+        const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
+        setPendDist(d);setSelLie(null);setSelDir(null);setPenalty(false);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(p=>{
+        readings.push({lat:p.coords.latitude,lon:p.coords.longitude});
+        if(readings.length<5){setTimeout(sample,500);}
+        else{
+          const l={lat:readings.reduce((a,r)=>a+r.lat,0)/5,lon:readings.reduce((a,r)=>a+r.lon,0)/5};
+          const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
+          setPendDist(d);setSelLie(null);setSelDir(null);setPenalty(false);
+        }
+      },(err)=>{
+        if(Date.now()-start<5000)setTimeout(sample,500);
+        else{
+          const d=origin?calcDist(origin.lat,origin.lon,gps.lat,gps.lon):null;
+          setPendDist(d);setSelLie(null);setSelDir(null);setPenalty(false);
+        }
+      },{enableHighAccuracy:true,timeout:2000,maximumAge:0});
+    };
+    sample();
+  } else {
+    const l=simP(true);
     const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
     setPendDist(d);simPos.current={lat:l.lat,lon:l.lon};
-    setSelLie(null);setSelDir(null);setPenalty(false);setSS(SS.LAND);
-  };
+    setSelLie(null);setSelDir(null);setPenalty(false);
+  }
+};
   const onLie=lie=>{setSelLie(lie.id);setPenalty(!!lie.penalty);};
   const onConfirmLand=()=>{
     if(!selLie)return;
