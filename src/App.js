@@ -434,7 +434,7 @@ export default function App(){
     setTracking(true);
     watchRef.current=navigator.geolocation.watchPosition(
       p=>{setGpsErr(null);setGps({lat:p.coords.latitude,lon:p.coords.longitude,acc:Math.round(p.coords.accuracy)});},
-      ()=>{setGpsErr("sim");setGps({...simPos.current,sim:true});},
+      (err)=>{alert(`GPS Error: ${err.code} - ${err.message}`);setGpsErr("sim");setGps({...simPos.current,sim:true});},
       {enableHighAccuracy:true,maximumAge:0,timeout:30000}
     );
   },[]);
