@@ -551,8 +551,9 @@ const filtered = query.trim().length < 2 ? COURSES : [
   const holesFromCourse=(course,teeId)=>course.holes.map(h=>blankHole(h.par,h.tees[teeId]||0,h.hdcp));
 
   const startRound=()=>{
+    startGps();
     setHoles(holesFromCourse(selCourse,selTeeId));
-    setHoleIdx(0);resetShot();startGps();
+    setHoleIdx(0);resetShot();
     setScreen("round");setMsg(`On the tee at ${selCourse.name}. Let's go! 🏌️`);
   };
 
