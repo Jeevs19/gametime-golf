@@ -496,10 +496,43 @@ export default function App(){
   };
 
   // ── Course helpers ─────────────────────────────────────────────────────────
-  const filtered = query.trim().length<2 ? COURSES : COURSES.filter(c=>{
+  const [apiCourses, setApiCourses] = useState([]);
+const [apiLoading, setApiLoading] = useState(false);
+
+useEffect(()=>{
+  if(query.trim().length < 2){ setApiCourses([]); return; }
+  const timeout = setTimeout(async ()=>{
+    setApiLoading(true);
+    try {
+      const res = await fetch(`/api/search-courses?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setApiCourses(data.courses || []);
+    } catch(e){ setApiCourses([]); }
+    setApiLoading(false);
+  }, 400);
+  return ()=>clearTimeout(timeout);
+},[query]);
+
+const filtered = query.trim().length < 2 ? COURSES : [
+  ...COURSES.filter(c=>{
     const q=query.toLowerCase();
     return c.name.toLowerCase().includes(q)||c.city.toLowerCase().includes(q)||c.state.toLowerCase().includes(q);
-  });
+  }),
+  ...apiCourses.filter(a=>!COURSES.find(c=>c.name.toLowerCase()===a.club_name.toLowerCase())).map(a=>({
+    id: String(a.id),
+    name: a.club_name,
+    city: a.location.city,
+    state: a.location.state,
+    fromAPI: true,
+    holes: a.tees.male?.[0]?.holes.map(h=>({
+      par: h.par,
+      hdcp: h.handicap,
+      tees: Object.fromEntries((a.tees.male||[]).map(t=>[t.tee_name.toLowerCase().replace(/[^a-z]/g,''),t.holes[0]?.yardage])),
+      green:{front:12,back:22},
+      hazards:[]
+    })) || []
+  }))
+];
   const availTees = selCourse ? Object.keys(TEE_META).filter(id=>selCourse.holes[0].tees[id]!=null) : [];
 
   const holesFromCourse=(course,teeId)=>course.holes.map(h=>blankHole(h.par,h.tees[teeId]||0,h.hdcp));
