@@ -435,7 +435,7 @@ export default function App(){
     watchRef.current=navigator.geolocation.watchPosition(
       p=>{setGpsErr(null);setGps({lat:p.coords.latitude,lon:p.coords.longitude,acc:Math.round(p.coords.accuracy)});},
       ()=>{setGpsErr("sim");setGps({...simPos.current,sim:true});},
-      {enableHighAccuracy:true,maximumAge:3000}
+      {enableHighAccuracy:true,maximumAge:0,timeout:30000}
     );
   },[]);
   const stopGps=useCallback(()=>{if(watchRef.current)navigator.geolocation.clearWatch(watchRef.current);setTracking(false);},[]);
