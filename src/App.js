@@ -607,6 +607,7 @@ const filtered = query.trim().length < 2 ? COURSES : [
 };
 
 const onMark=()=>{
+  setSelLie(null);setSelDir(null);setPenalty(false);
   if(gps&&!gps.sim){
     const readings=[];
     const start=Date.now();
@@ -615,7 +616,7 @@ const onMark=()=>{
       if(Date.now()-start>5000){
         const l=readings.length>0?{lat:readings.reduce((a,r)=>a+r.lat,0)/readings.length,lon:readings.reduce((a,r)=>a+r.lon,0)/readings.length}:gps;
         const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
-        setPendDist(d);setSelLie(null);setSelDir(null);setPenalty(false);
+        setPendDist(d);
         return;
       }
       navigator.geolocation.getCurrentPosition(p=>{
@@ -624,13 +625,13 @@ const onMark=()=>{
         else{
           const l={lat:readings.reduce((a,r)=>a+r.lat,0)/5,lon:readings.reduce((a,r)=>a+r.lon,0)/5};
           const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
-          setPendDist(d);setSelLie(null);setSelDir(null);setPenalty(false);
+          setPendDist(d);
         }
       },(err)=>{
         if(Date.now()-start<5000)setTimeout(sample,500);
         else{
           const d=origin?calcDist(origin.lat,origin.lon,gps.lat,gps.lon):null;
-          setPendDist(d);setSelLie(null);setSelDir(null);setPenalty(false);
+          setPendDist(d);
         }
       },{enableHighAccuracy:true,timeout:2000,maximumAge:0});
     };
@@ -639,7 +640,6 @@ const onMark=()=>{
     const l=simP(true);
     const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
     setPendDist(d);simPos.current={lat:l.lat,lon:l.lon};
-    setSelLie(null);setSelDir(null);setPenalty(false);
   }
 };
   const onLie=lie=>{setSelLie(lie.id);setPenalty(!!lie.penalty);};
