@@ -580,10 +580,9 @@ const filtered = query.trim().length < 2 ? COURSES : [
   const onSwing=()=>{setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");if(gps)fetchWind(gps.lat,gps.lon);};
   const onMark=()=>{
     const l=(gps&&!gps.sim)?gps:simP(true);
-   const onSwing=()=>{
-    if(gps&&!gps.sim)setOrigin({lat:gps.lat,lon:gps.lon});
-    setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");
-    if(gps)fetchWind(gps.lat,gps.lon);
+    const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
+    setPendDist(d);simPos.current={lat:l.lat,lon:l.lon};
+    setSelLie(null);setSelDir(null);setPenalty(false);setSS(SS.LAND);
   };
   const onLie=lie=>{setSelLie(lie.id);setPenalty(!!lie.penalty);};
   const onConfirmLand=()=>{
