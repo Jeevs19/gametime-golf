@@ -577,7 +577,26 @@ const filtered = query.trim().length < 2 ? COURSES : [
     setOrigin(o);setSS(SS.READY);
     setMsg(`${wind?`Wind ${wind.s}mph ${wind.d}. `:""}${selClub} — tap SWING.`);
   };
-  const onSwing=()=>{if(gps&&!gps.sim)setOrigin({lat:gps.lat,lon:gps.lon});setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");if(gps)fetchWind(gps.lat,gps.lon);};
+  const onSwing=()=>{
+  if(gps?.acc&&gps.acc>20){showToast("Poor GPS accuracy, wait a moment","⚠️");return;}
+  if(gps&&!gps.sim){
+    const readings=[];
+    const sample=()=>{
+      navigator.geolocation.getCurrentPosition(p=>{
+        readings.push({lat:p.coords.latitude,lon:p.coords.longitude});
+        if(readings.length<3){setTimeout(sample,600);}
+        else{
+          const avgLat=readings.reduce((a,r)=>a+r.lat,0)/3;
+          const avgLon=readings.reduce((a,r)=>a+r.lon,0)/3;
+          setOrigin({lat:avgLat,lon:avgLon});
+        }
+      },{enableHighAccuracy:true,timeout:2000,maximumAge:0});
+    };
+    sample();
+  }
+  setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");
+  if(gps)fetchWind(gps.lat,gps.lon);
+};
   const onMark=()=>{
     const l=(gps&&!gps.sim)?gps:simP(true);
     const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
@@ -1237,7 +1256,10 @@ const filtered = query.trim().length < 2 ? COURSES : [
             {wind&&<div style={{textAlign:"center",fontSize:11,color:wStr(wind.s).c}}>🌬️ {wind.s}mph {wind.d}</div>}
             <div style={S.sheetTitle}>Address the Ball</div>
             <p style={{fontSize:13,color:"#9ca3af",textAlign:"center",lineHeight:1.6}}>Tap SWING right before you hit. Locks GPS origin.</p>
-            <button style={{...S.btn,background:"linear-gradient(135deg,#22c55e,#16a34a)",fontSize:20,padding:22,letterSpacing:3}} onClick={onSwing}>🏌️  SWING</button>
+            <button style={{...S.btn,background:gps?.acc&&gps.acc<=20?"linear-gradient(135deg,#22c55e,#16a34a)":"linear-gradient(135deg,#ca8a04,#a07840)",fontSize:20,padding:22,letterSpacing:3}} onClick={onSwing}>
+  🏌️  SWING {gps?.acc?`±${gps.acc}m`:"📡..."}
+</button>
+{gps?.acc&&gps.acc>20&&<p style={{fontSize:12,color:"#fbbf24",textAlign:"center",margin:0}}>Waiting for better GPS lock... ({gps.acc}m)</p>}
             <button style={S.ghost} onClick={()=>setSS(SS.CLUB)}>← Change Club</button>
           </div></div>}
 
