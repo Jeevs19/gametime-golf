@@ -1310,7 +1310,7 @@ const onMark=()=>{
             <div><div style={S.lbl}>DIRECTION</div><div style={{display:"flex",gap:8}}>{DIRS.map(d=>(<button key={d.id} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",borderRadius:12,padding:"10px 4px",cursor:"pointer",gap:3,background:selDir===d.id?"rgba(200,169,110,0.2)":"rgba(255,255,255,0.05)",border:`1px solid ${selDir===d.id?"#c8a96e":"rgba(255,255,255,0.08)"}`}} onClick={()=>setSelDir(d.id)}><span style={{fontSize:16}}>{d.emoji}</span><span style={{fontSize:10,color:selDir===d.id?"#c8a96e":"#9ca3af"}}>{d.label}</span></button>))}</div></div>
 
             {selLie!=="water_ob"&&<button style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",borderRadius:12,padding:"10px",cursor:"pointer",gap:3,width:"100%",background:penalty?"rgba(248,113,113,0.2)":"rgba(255,255,255,0.05)",border:`1px solid ${penalty?"#f87171":"rgba(255,255,255,0.08)"}`}} onClick={()=>setPenalty(p=>!p)}><span style={{fontSize:16}}>⚠️</span><span style={{fontSize:12,color:penalty?"#f87171":"#9ca3af"}}>{penalty?"Penalty stroke":"No penalty"}</span></button>}
-            <button style={{...S.btn,opacity:selLie?1:0.4}} onClick={onConfirmLand} disabled={!selLie}>Confirm Shot ✓</button>
+            <button style={{...S.btn,opacity:selLie?1:0.4}} onClick={onConfirmLand} disabled={!selLie||pendDist===undefined}>Confirm Shot ✓</button>
             <button style={S.ghost} onClick={()=>{resetShot();setMsg("No worries — tap New Shot when ready.");}}>Cancel</button>
           </div></div>}
 
