@@ -577,7 +577,7 @@ const filtered = query.trim().length < 2 ? COURSES : [
     setOrigin(o);setSS(SS.READY);
     setMsg(`${wind?`Wind ${wind.s}mph ${wind.d}. `:""}${selClub} — tap SWING.`);
   };
-  const onSwing=()=>{setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");if(gps)fetchWind(gps.lat,gps.lon);};
+  const onSwing=()=>{if(gps&&!gps.sim)setOrigin({lat:gps.lat,lon:gps.lon});setSS(SS.FLIGHT);setMsg("Walk to your ball. 🚶");showToast("Origin locked","🏌️");if(gps)fetchWind(gps.lat,gps.lon);};
   const onMark=()=>{
     const l=(gps&&!gps.sim)?gps:simP(true);
     const d=origin?calcDist(origin.lat,origin.lon,l.lat,l.lon):null;
